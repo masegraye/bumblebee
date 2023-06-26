@@ -701,10 +701,10 @@ defmodule Bumblebee do
           {:ok, Bumblebee.Tokenizer.t()} | {:error, String.t()}
   def load_tokenizer(repository, opts \\ []) do
     repository = normalize_repository!(repository)
-    opts = Keyword.validate!(opts, [:module])
+    opts = Keyword.validate!(opts, [:module, :tokenizer_filename, :tokenizer_special_tokens_filename])
     module = opts[:module]
 
-    with {:ok, path} <- download(repository, @tokenizer_filename) do
+    with {:ok, path} <- download(repository,  Keyword.get(opts, :tokenizer_filename, @tokenizer_filename)) do
       module =
         module ||
           case infer_tokenizer_type(repository) do
@@ -713,7 +713,7 @@ defmodule Bumblebee do
           end
 
       special_tokens_map =
-        with {:ok, path} <- download(repository, @tokenizer_special_tokens_filename),
+        with {:ok, path} <- download(repository, Keyword.get(opts, :tokenizer_special_tokens_filename, @tokenizer_special_tokens_filename)),
              {:ok, special_tokens_map} <- decode_config(path) do
           special_tokens_map
         else
